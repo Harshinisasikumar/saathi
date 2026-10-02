@@ -38,7 +38,7 @@ jobs:
         run: |
           REPO="${{ github.event.repository.name }}"
           if [ -n "${BASE_URL:-}" ]; then B="$BASE_URL"; else B="/$REPO/"; fi
-          VITE_API_URL="${API_URL:-https://saathi.onrender.com}" VITE_BASE_URL="$B" npm run build -w client
+          VITE_API_URL="${API_URL:-https://family-skills-counselling.vercel.app}" VITE_BASE_URL="$B" npm run build -w client
       - uses: actions/upload-pages-artifact@v3
         with:
           path: client/dist
