@@ -71,10 +71,11 @@ function Admin() {
 }
 
 export default function App() {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
   return (
     <LanguageProvider>
       <FlowProvider>
-        <BrowserRouter>
+        <BrowserRouter basename={base}>
           <Layout>
             <Suspense fallback={<RouteFallback />}>
               <Routes>

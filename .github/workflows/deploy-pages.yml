@@ -1,0 +1,46 @@
+name: Deploy static site to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - client/**
+      - package.json
+      - package-lock.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build static client
+        env:
+          API_URL: ${{ vars.API_URL }}
+          BASE_URL: ${{ vars.BASE_URL }}
+        run: |
+          REPO="${{ github.event.repository.name }}"
+          if [ -n "${BASE_URL:-}" ]; then B="$BASE_URL"; else B="/$REPO/"; fi
+          VITE_API_URL="${API_URL:-https://saathi.onrender.com}" VITE_BASE_URL="$B" npm run build -w client
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: client/dist
+      - id: deployment
+        uses: actions/deploy-pages@v4

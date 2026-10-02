@@ -92,6 +92,24 @@ Verified behaviour of the production build:
 
 The health check uses `GET /api/health`.
 
+### Deploy the frontend as a static site (GitHub Pages)
+
+The client can also be published as a **static site** that talks to the API
+cross-origin (the server sends permissive CORS for the demo).
+
+1. Push to GitHub — `.github/workflows/deploy-pages.yml` auto-builds
+   `client/dist` and deploys it to GitHub Pages on every push touching the
+   client.
+2. The workflow bakes the API base from the repo variable `API_URL`
+   (default `https://saathi.onrender.com`) and the base path from `BASE_URL`
+   (default `/<repo>/` for a Pages project site). Set these in
+   **Settings → Variables → Actions** if your API/deploy path differs.
+3. Enable Pages in **Settings → Pages → Source: GitHub Actions** once.
+
+The API client resolves its base URL from (highest priority first)
+`window.SAATHI_API_URL` (inject via `index.html`), then the build-time
+`VITE_API_URL`, then same-origin `/api`. See `client/.env.example`.
+
 ---
 
 ## The walkthrough (3–5 minutes)

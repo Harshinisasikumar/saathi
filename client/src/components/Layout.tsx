@@ -29,9 +29,9 @@ export function Layout({ children }: { children: ReactNode }) {
       <DemoBanner demoNotice={demoNotice} demoMode={meta?.demoMode} />
       <main className="container my-4 flex-grow-1">{children}</main>
       <footer className="text-center text-muted small pb-3">
-        <a href="/" className="text-muted">
+        <Link to="/" className="text-muted">
           {UI.govHeading[lang]}
-        </a>{" "}
+        </Link>{" "}
         · privacy: {UI.privacyNote[lang].slice(0, 60)}…
       </footer>
     </div>

@@ -14,8 +14,18 @@ import type {
   Lang,
 } from './types';
 
+// Runtime API base resolution, in priority order:
+//   1. window.SAATHI_API_URL (injected via index.html <script> — works on static hosts)
+//   2. import.meta.env.VITE_API_URL (baked at build time)
+//   3. '' — same origin (/api), used in dev via the Vite proxy and when the API serves the app.
+const apiBase =
+  (typeof window !== 'undefined' &&
+    (window as { SAATHI_API_URL?: string }).SAATHI_API_URL?.trim()) ||
+  ((import.meta.env.VITE_API_URL as string | undefined) ?? '').trim() ||
+  '';
+
 const http = axios.create({
-  baseURL: '/api',
+  baseURL: `${apiBase}/api`,
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 });
