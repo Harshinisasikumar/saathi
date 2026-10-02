@@ -3,13 +3,15 @@
   "version": 2,
   "installCommand": "npm ci",
   "buildCommand": "npm run build",
+  "outputDirectory": "client/dist",
   "functions": {
     "api/index.ts": {
-      "includeFiles": "client/dist/**",
-      "maxDuration": 15
+      "maxDuration": 10
     }
   },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/api" }
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/api-docs(/.*)?", "destination": "/api" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

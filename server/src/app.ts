@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import { env } from './config/env.js';
@@ -49,8 +48,14 @@ app.use('/api/providers', rateLimit(120, 60000), providersRouter);
 app.use('/api/escalation', rateLimit(30, 60000), escalationRouter);
 app.use('/api/admin', adminRouter);
 
-const clientDist = fileURLToPath(new URL('../../client/dist', import.meta.url));
-if (fs.existsSync(clientDist)) {
+// Locate the built client for single-service deployments (local `npm start`,
+// Render). On Vercel the SPA is served by Vercel's static CDN instead, so this
+// is intentionally a no-op there — no `import.meta` is used so the bundle also
+// survives bundlers that emit CommonJS (serverless functions).
+const clientDist = [path.resolve(process.cwd(), 'client/dist'), path.resolve(process.cwd(), '../client/dist')].find(
+  (p) => fs.existsSync(path.join(p, 'index.html')),
+);
+if (clientDist) {
   app.use(express.static(clientDist));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api/')) return next();

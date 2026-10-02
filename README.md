@@ -115,8 +115,11 @@ and no CORS issue. HTTPS is automatic.
    memory lives inside one warm instance and can reset between requests —
    for a persistent experience, connect Supabase (also free).
 
-The runtime finds the client bundle via `includeFiles: client/dist/**` in
-`vercel.json`.
+How the routing splits (see `vercel.json`): `outputDirectory: client/dist`
+publishes the React app on Vercel's static CDN with an SPA fallback to
+`index.html`, while `/api/*` and `/api-docs` are rewritten to the
+`api/index.ts` serverless function (the same Express app from
+`server/src/app.ts`). HTTPS is automatic.
 
 ### Deploy the frontend as a static mirror (GitHub Pages, optional)
 
