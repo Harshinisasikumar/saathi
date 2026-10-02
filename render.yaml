@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: saathi
+    runtime: node
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /api/health
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: DEMO_MODE
+        value: "true"
+      - key: ADMIN_USER
+        value: admin
+      - key: ADMIN_PASS
+        value: saathi2024
+        sync: false
+      - key: MONGODB_URI
+        value: ""
+        sync: false
+      - key: CORS_ORIGIN
+        value: "*"
