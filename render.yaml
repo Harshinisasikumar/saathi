@@ -15,6 +15,15 @@ services:
       - key: ADMIN_PASS
         value: saathi2024
         sync: false
+      # Persistence: set these to use Supabase (Postgres). Run
+      # server/supabase/schema.sql once in the Supabase SQL editor first.
+      # SUPABASE_SERVICE_KEY is the service-role key — server side only.
+      - key: SUPABASE_URL
+        value: ""
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        value: ""
+        sync: false
       - key: MONGODB_URI
         value: ""
         sync: false

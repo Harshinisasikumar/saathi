@@ -6,6 +6,19 @@ let store: StoreBackend | null = null;
 
 export async function getStore(): Promise<StoreBackend> {
   if (store) return store;
+  if (env.supabaseUrl && env.supabaseKey) {
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const { SupabaseStore } = await import('./supabaseStore.js');
+      const client = createClient(env.supabaseUrl, env.supabaseKey);
+      store = new SupabaseStore(client);
+      await store.init();
+      console.log(`[saathi] persistence backend: ${store.backendName()}`);
+      return store;
+    } catch (err) {
+      console.warn('[saathi] Supabase unavailable, falling back to in-memory store:', (err as Error).message);
+    }
+  }
   if (env.mongoUri) {
     try {
       const mongoose = (await import('mongoose')).default;

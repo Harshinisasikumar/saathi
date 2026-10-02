@@ -2,6 +2,13 @@
 
 Base URL in dev: `http://localhost:8787/api` (proxied by Vite from `/api`).
 
+**Interactive Swagger UI:** `http://localhost:8787/api-docs` (also live in the
+deployed app at `/api-docs`). Swagger shows every endpoint, lets you send
+test requests, and covers GET / POST / PUT / DELETE, auth (HTTP Basic),
+validation and error responses. You can also view the raw spec at
+`GET /api-docs/spec` (served by Swagger UI) — the source is
+`server/src/docs/openapi.ts`.
+
 All JSON. Rate limits are per-IP buckets; exceeded requests get `429`.
 
 ---

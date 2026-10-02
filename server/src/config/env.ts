@@ -1,8 +1,10 @@
 export const env = {
   port: Number(process.env.PORT ?? 8787),
   mongoUri: process.env.MONGODB_URI ?? null,
-  adminUser: process.env.ADMIN_USER ?? 'admin',
-  adminPass: process.env.ADMIN_PASS ?? 'saathi2024',
+  supabaseUrl: process.env.SUPABASE_URL ?? null,
+  supabaseKey: process.env.SUPABASE_SERVICE_KEY ?? null,
+  adminUser: process.env.ADMIN_USER || 'admin',
+  adminPass: process.env.ADMIN_PASS || 'saathi2024',
   demoMode: process.env.DEMO_MODE !== 'false',
   corsOrigin: process.env.CORS_ORIGIN ?? '*',
 };

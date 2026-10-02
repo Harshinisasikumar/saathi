@@ -9,7 +9,8 @@ ranking trades into a single "best career".
 ```
 /family-skills-counselling
 ├─ client/   React 18 + Vite + Bootstrap 5 + Recharts
-├─ server/   Node + Express + TypeScript (MongoDB backed, in-memory fallback)
+├─ server/   Node + Express + TypeScript (Supabase/MongoDB backed, in-memory fallback)
+│            incl. Swagger UI at /api-docs (OpenAPI spec in server/src/docs/)
 └─ scripts/  smoke.mjs (end-to-end API test)
 ```
 
@@ -34,7 +35,7 @@ Open http://localhost:5173
 | `npm run dev:server` | API only, watch mode                            |
 | `npm run dev:client` | Vite client only                                |
 | `npm run typecheck`  | `tsc` for server and client                     |
-| `npm run seed`       | Seed MongoDB demo sessions (needs `MONGODB_URI`)|
+| `npm run seed`       | Seed Supabase or MongoDB demo sessions (needs creds)
 | `npm run smoke`      | End-to-end API smoke test (starts its own port) |
 | `npm run build`      | Production build for both workspaces            |
 | `npm start`          | Run the built server (`server/dist/index.js`)   |
@@ -50,7 +51,17 @@ Open http://localhost:5173
 No database is required for the demo. The API defaults to an in-memory store
 pre-seeded with synthetic counselling sessions so the admin dashboard has data.
 
-To use MongoDB instead, set `MONGODB_URI` (see `server/.env.example`):
+**Supabase (Postgres) — recommended:** create a project, run
+`server/supabase/schema.sql` in its SQL editor, then set:
+
+```bash
+$env:SUPABASE_URL="https://your-project-ref.supabase.co"
+$env:SUPABASE_SERVICE_KEY="<service-role key, server-side only>"
+npm run seed     # optional: seed demo sessions
+npm run dev
+```
+
+**MongoDB (fallback):** set `MONGODB_URI` (see `server/.env.example`):
 
 ```bash
 $env:MONGODB_URI="mongodb://127.0.0.1:27017/saathi"   # PowerShell
@@ -58,7 +69,8 @@ export MONGODB_URI="mongodb://127.0.0.1:27017/saathi" # bash
 npm run dev
 ```
 
-If Mongo is unreachable, the server logs a warning and falls back to memory.
+Backend selection order: Supabase → MongoDB → in-memory. If the configured
+backend is unreachable, the server logs a warning and falls back to memory.
 
 ---
 
@@ -81,30 +93,43 @@ Verified behaviour of the production build:
 | `GET /api/health`   | JSON `{"ok":true,…}`                    |
 | `GET /api/nope`     | JSON `{"error":"Not found."}`           |
 
-### Deploy to Render (free)
+### Deploy to Vercel (free) — primary production target
 
-1. Push this repository to GitHub.
-2. In the Render dashboard choose **New → Blueprint** and select the repo.
-3. Render reads `render.yaml`, builds (`npm install && npm run build`) and
-   starts (`npm start`). The app is available at `https://saathi.onrender.com`.
-4. Optional: set `ADMIN_PASS` and `MONGODB_URI` in the Render dashboard
-   (both are marked `sync: false` in `render.yaml`).
+Vercel hosts the **entire app** (React UI + Express API) as one deployment, so
+there is a single URL (e.g. `https://saathi.vercel.app`), same-origin `/api`,
+and no CORS issue. HTTPS is automatic.
 
-The health check uses `GET /api/health`.
+1. Push this repository to GitHub (already done for `Harshinisasikumar/saathi`).
+2. Import it at https://vercel.com/new → **Continue with GitHub** → pick the
+   `saathi` repo. Vercel uses the root `package.json` (`npm ci`, then
+   `npm run build` which compiles the server and bundles the client).
+3. `vercel.json` routes every request to the `api/index.ts` serverless
+   function, which is the same Express app (`server/src/app.ts`) — static
+   assets, SPA fallback and `/api/*` all in one.
+4. Optional env vars (dashboard → Settings → Environment Variables, or
+   `vercel env add`): `ADMIN_PASS` (admin password), `DEMO_MODE`, and for a
+   persistent database `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` (run
+   `server/supabase/schema.sql` in your Supabase SQL editor first). Leave them
+   unset to run on the seed data.
+5. Without a database the in-memory demo store is used. On serverless that
+   memory lives inside one warm instance and can reset between requests —
+   for a persistent experience, connect Supabase (also free).
 
-### Deploy the frontend as a static site (GitHub Pages)
+The runtime finds the client bundle via `includeFiles: client/dist/**` in
+`vercel.json`.
+
+### Deploy the frontend as a static mirror (GitHub Pages, optional)
 
 The client can also be published as a **static site** that talks to the API
-cross-origin (the server sends permissive CORS for the demo).
+cross-origin (the server sends permissive CORS for the demo). This is only a
+mirror; the Vercel deployment above is the real app.
 
-1. Push to GitHub — `.github/workflows/deploy-pages.yml` auto-builds
-   `client/dist` and deploys it to GitHub Pages on every push touching the
-   client.
-2. The workflow bakes the API base from the repo variable `API_URL`
-   (default `https://saathi.onrender.com`) and the base path from `BASE_URL`
-   (default `/<repo>/` for a Pages project site). Set these in
-   **Settings → Variables → Actions** if your API/deploy path differs.
-3. Enable Pages in **Settings → Pages → Source: GitHub Actions** once.
+1. `.github/workflows/deploy-pages.yml` auto-builds `client/dist` and deploys
+   it to GitHub Pages on every push touching the client.
+2. The workflow bakes the API base from the repo variable `API_URL` (default
+   `https://saathi.onrender.com`) and the base path from `BASE_URL` (default
+   `/<repo>/`). Point `API_URL` at your Vercel URL (Settings → Variables →
+   Actions) if you keep the mirror.
 
 The API client resolves its base URL from (highest priority first)
 `window.SAATHI_API_URL` (inject via `index.html`), then the build-time
@@ -163,8 +188,10 @@ Full endpoint reference: [docs/api.md](docs/api.md)
 - `server/src/domain/types.ts` — domain model; every number is a `Metric`
   carrying provenance.
 - `server/src/data/seedData.ts` — 5 trades, providers, outcomes, `DEMO_SOURCE`.
-- `server/src/db/{store,mongoStore,schemas,index}.ts` — storage contract with
-  in-memory + MongoDB backends.
+- `server/src/db/` — storage contract (`store.ts`) with Supabase
+  (`supabaseStore.ts` + `supabase/schema.sql`), MongoDB (`mongoStore.ts`) and
+  in-memory backends, chosen by env in `index.ts`.
+- `server/src/db/seed.ts` — seeds demo sessions into Supabase/Mongo (optional).
 - `server/src/ai/` — Tamil detection, deterministic concern classifier,
   retrieval (`rag.ts`), bilingual counsellor.
 - `server/src/services/counsellingService.ts` — snapshot scoring, scorecard,
