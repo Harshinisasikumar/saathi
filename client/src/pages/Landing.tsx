@@ -16,14 +16,14 @@ export default function Landing() {
   return (
     <div className="row justify-content-center">
       <div className="col-lg-8">
-        <div className="text-center py-4">
-          <div className="badge saathi-soft mb-3">
+        <div className="text-center saathi-hero">
+          <div className="badge saathi-soft mb-3 rounded-pill">
             <i className="bi bi-mortarboard me-1" />
             {UI.govHeading[lang]}
           </div>
           <h1 className="display-5 fw-bold saathi-headline">{UI.tagline[lang]}</h1>
-          <p className="lead text-muted mx-auto saathi-lead">{UI.sub[lang]}</p>
-          <div className="card saathi-card mt-4 p-3 text-start mx-auto saathi-howcard">
+          <p className="lead mx-auto saathi-lead">{UI.sub[lang]}</p>
+          <div className="card saathi-card mt-4 p-4 text-start mx-auto saathi-howcard">
             <div className="fw-semibold mb-1">
               <i className="bi bi-compass me-2 saathi-accent" />
               {UI.howWorkTitle[lang]}

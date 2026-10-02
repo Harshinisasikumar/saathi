@@ -28,7 +28,7 @@ export function Layout({ children }: { children: ReactNode }) {
       </nav>
       <DemoBanner demoNotice={demoNotice} demoMode={meta?.demoMode} />
       <main className="container my-4 flex-grow-1">{children}</main>
-      <footer className="text-center text-muted small pb-3">
+      <footer className="text-center text-muted small pt-3">
         <Link to="/" className="text-muted">
           {UI.govHeading[lang]}
         </Link>{" "}
